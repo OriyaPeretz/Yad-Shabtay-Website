@@ -1540,12 +1540,27 @@
   // 2. פונקציה לטעינת כל המשאבים מהשרת
   window.loadResources = async function() {
     try {
-      const q = query(collection(db, "resources"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-      const resources = [];
-      querySnapshot.forEach((doc) => {
-        resources.push(doc.data());
-      });
+        console.log("מנסה למשוך נתונים מהענן...");
+        const q = query(collection(db, "resources"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        const resourcesFromServer = [];
+        
+        querySnapshot.forEach((doc) => {
+            resourcesFromServer.push(doc.data());
+        });
+
+        // עדכון הרשימה שמוצגת באתר
+        window.resources = resourcesFromServer;
+        
+        // פקודה לצייר את הכרטיסים ולעדכן מספרים
+        if (typeof renderCards === 'function') renderCards();
+        if (typeof updateCounts === 'function') updateCounts();
+        
+        console.log("הנתונים מהענן מוצגים כעת!");
+    } catch (e) {
+        console.error("שגיאה בטעינה: ", e);
+    }
+  };
       
       // כאן את קוראת לפונקציה המקורית שלך שמציגה את הכרטיסיות
       // ודאי ששם הפונקציה המרנדרת אצלך הוא אכן displayResources
