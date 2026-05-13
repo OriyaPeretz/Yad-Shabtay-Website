@@ -1394,7 +1394,7 @@
       fileData: activeTab === 'file' ? selectedFileData.data : null,
     };
     saveResourceToDB(newResource);
-    try { saveResources(); } catch(e) {}
+    // try { saveResources(); } catch(e) {}
     updateCounts();
     renderCards();
     closeUploadModal();
