@@ -1393,7 +1393,7 @@
       mimeType: activeTab === 'file' ? selectedFileData.mimeType : null,
       fileData: activeTab === 'file' ? selectedFileData.data : null,
     };
-    resources.push(resource);
+    saveResourceToDB(newResource);
     try { saveResources(); } catch(e) {}
     updateCounts();
     renderCards();
@@ -1498,6 +1498,67 @@
   loadSavedLogo();
   updateCounts();
   renderCards();
+</script>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+  // ה-Config האישי שלך
+  const firebaseConfig = {
+    apiKey: "AIzaSyA-GLOAkC3v9-G0i0LQJefSeLXaH76H-HA",
+    authDomain: "yad-shabtai-resources.firebaseapp.com",
+    projectId: "yad-shabtai-resources",
+    storageBucket: "yad-shabtai-resources.firebasestorage.app",
+    messagingSenderId: "730001945287",
+    appId: "1:730001945287:web:924fc91ee2a5dac3f504e2",
+    measurementId: "G-EXW1GS3NLE"
+  };
+
+  // אתחול
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // --- פונקציות העבודה עם המידע ---
+
+  // 1. פונקציה לשמירת משאב חדש ב-Firebase
+  window.saveResourceToDB = async function(newResource) {
+    try {
+      // הוספת זמן יצירה כדי שנוכל למיין
+      const resourceWithTimestamp = {
+        ...newResource,
+        createdAt: new Date()
+      };
+      await addDoc(collection(db, "resources"), resourceWithTimestamp);
+      console.log("המשאב נשמר בהצלחה בשרת בתל אביב!");
+      loadResources(); // רענון הרשימה מהשרת
+    } catch (e) {
+      console.error("שגיאה בשמירה: ", e);
+      alert("הייתה בעיה בשמירת המידע, נסי שוב.");
+    }
+  };
+
+  // 2. פונקציה לטעינת כל המשאבים מהשרת
+  window.loadResources = async function() {
+    try {
+      const q = query(collection(db, "resources"), orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      const resources = [];
+      querySnapshot.forEach((doc) => {
+        resources.push(doc.data());
+      });
+      
+      // כאן את קוראת לפונקציה המקורית שלך שמציגה את הכרטיסיות
+      // ודאי ששם הפונקציה המרנדרת אצלך הוא אכן displayResources
+      if (typeof displayResources === "function") {
+          displayResources(resources); 
+      }
+    } catch (e) {
+      console.error("שגיאה בטעינת המידע: ", e);
+    }
+  };
+
+  // טעינה ראשונית כשהדף עולה
+  window.onload = loadResources;
 </script>
 </body>
 </html>
